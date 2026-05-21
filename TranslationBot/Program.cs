@@ -14,7 +14,11 @@ namespace TranslationBot
     class Program
     {
         private static readonly string BotToken = "8615542214:AAH9Eh-XhJDDec8w1dp9ffhIm5gFjYe7z5o";
+
+
         private static readonly string ApiBaseUrl = "https://localhost:7288/api/Translate";
+
+
         private static readonly HttpClient _httpClient = new HttpClient();
 
         static async Task Main(string[] args)
@@ -48,24 +52,14 @@ namespace TranslationBot
 
                     string welcome = "Привіт! Я твій бот-перекладач. ✨\n\n" +
                                      "Я щойно очистив твою історію, щоб ми могли почати з чистого аркуша!\n\n" +
-                                     "Просто напиши мені текст для перекладу або скористайся кнопками нижче.\n" +
-                                     "(Для інфо про країну пиши: /country Назва)";
+                                     "Просто напиши мені текст для перекладу або скористайся кнопками нижче.";
 
                     var replyKeyboard = new ReplyKeyboardMarkup(new[]
                     {
-                        new[]
-                        {
-                            new KeyboardButton("🔄 Почати спочатку"),
-                            new KeyboardButton("📜 Історія")
-                        },
-                        new[]
-                        {
-                            new KeyboardButton("💬 Випадкова цитата")
-                        }
+                        new[] { new KeyboardButton("🔄 Почати спочатку"), new KeyboardButton("📜 Історія") },
+                        new[] { new KeyboardButton("💬 Випадкова цитата") }
                     })
-                    {
-                        ResizeKeyboard = true
-                    };
+                    { ResizeKeyboard = true };
 
                     await botClient.SendMessage(chatId, welcome, replyMarkup: replyKeyboard, cancellationToken: ct);
                     return;
@@ -87,15 +81,7 @@ namespace TranslationBot
                     return;
                 }
 
-                if (messageText.StartsWith("/country"))
-                {
-                    var name = messageText.Split(' ', 2).Length > 1 ? messageText.Split(' ', 2)[1] : "";
-                    if (string.IsNullOrEmpty(name)) { await botClient.SendMessage(chatId, "Вкажи країну!"); return; }
-                    var c = await _httpClient.GetFromJsonAsync<CountryInfo>($"{ApiBaseUrl}/country/{name}");
-                    await botClient.SendMessage(chatId, $"Країна: {c.Name.Common}\nНаселення: {c.Population}", cancellationToken: ct);
-                    return;
-                }
-
+                // Переклад
                 var result = await _httpClient.PostAsJsonAsync(ApiBaseUrl, new { ChatId = chatId, Text = messageText, From = "uk", To = "en" });
                 var record = await result.Content.ReadFromJsonAsync<TranslationRecord>();
                 await botClient.SendMessage(chatId, $"🇬🇧 {record.TranslatedText}", cancellationToken: ct);
@@ -103,7 +89,7 @@ namespace TranslationBot
             catch (Exception ex)
             {
                 Console.WriteLine($"Помилка: {ex.Message}");
-                await botClient.SendMessage(chatId, "Сталася помилка. Перевір, чи запущено API!", cancellationToken: ct);
+                await botClient.SendMessage(chatId, "Сталася помилка. Перевір пароль або хостинг!", cancellationToken: ct);
             }
         }
 

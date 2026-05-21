@@ -3,20 +3,21 @@ using TranslationApi.Data;
 using TranslationApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-// Підключення бази даних SQLite
+
+// Налаштування бази даних SQLite (зберігання історії)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=translations.db"));
-// Add services to the container.
+
+// Реєстрація сервісу перекладу (MyMemory API)
 builder.Services.AddHttpClient<ITranslationService, MyMemoryService>();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(); // Генерація документації API
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Включаємо Swagger для тестування методів у браузері
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -24,9 +25,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
-app.MapControllers();
+app.MapControllers(); // Підключення контролерів
 
 app.Run();
